@@ -10,9 +10,7 @@ export function init() {
 		scope: "world",
 		config: true,
 		restricted: true,
-		onChange: (value) => {
-			window.location.reload();
-		},
+		requiresReload: true,
 	});
 
 	game.settings.register("ru-ru", "compendiumTranslation", {
@@ -23,61 +21,59 @@ export function init() {
 		scope: "world",
 		config: true,
 		restricted: true,
-		onChange: (value) => {
-			window.location.reload();
-		},
+		requiresReload: true,
 	});
 
 	/* Регистрация Babele */
 	if (game.settings.get("ru-ru", "compendiumTranslation")) {
-		/* Библиотеки D&D */
-		game.settings.get("ru-ru", "altTranslation")
-			? setupBabele("dnd5e/ps")
-			: setupBabele("dnd5e/hw");
+		if (typeof game.babele !== "undefined") {
+			/* Библиотеки D&D */
+			game.settings.get("ru-ru", "altTranslation")
+				? setupBabele("dnd5e/ps")
+				: setupBabele("dnd5e/hw");
 
-		/* Библиотеки Ruins of Symbaroum */
-		if (game.modules.get("symbaroum5ecore")?.active) {
-			setupBabele("dnd5e/ros");
-		}
+			/* Библиотеки Ruins of Symbaroum */
+			if (game.modules.get("symbaroum5ecore")?.active) {
+				setupBabele("dnd5e/ros");
+			}
 
-		game.babele.registerConverters({
-			dndpages(pages, translations) {
-				return pages.map((data) => {
-					if (!translations) {
-						return data;
-					}
+			game.babele.registerConverters({
+				dndpages(pages, translations) {
+					return pages.map((data) => {
+						if (!translations) {
+							return data;
+						}
 
-					let translation;
+						let translation;
 
-					if (Array.isArray(translations)) {
-						translation = translations.find(
-							(t) => t.id === data._id || t.id === data.name,
-						);
-					} else {
-						translation = translations[data.name];
-					}
+						if (Array.isArray(translations)) {
+							translation = translations.find(
+								(t) => t.id === data._id || t.id === data.name,
+							);
+						} else {
+							translation = translations[data.name];
+						}
 
-					if (!translation) {
-						return data;
-					}
+						if (!translation) {
+							return data;
+						}
 
-					return mergeObject(data, {
-						name: translation.name,
-						image: { caption: translation.caption ?? data.image?.caption },
-						src: translation.src ?? data.src,
-						text: { content: translation.text ?? data.text?.content },
-						video: {
-							width: translation.width ?? data.video?.width,
-							height: translation.height ?? data.video?.height,
-						},
-						system: { tooltip: translation.tooltip ?? data.system.tooltip },
-						translated: true,
+						return mergeObject(data, {
+							name: translation.name,
+							image: { caption: translation.caption ?? data.image?.caption },
+							src: translation.src ?? data.src,
+							text: { content: translation.text ?? data.text?.content },
+							video: {
+								width: translation.width ?? data.video?.width,
+								height: translation.height ?? data.video?.height,
+							},
+							system: { tooltip: translation.tooltip ?? data.system.tooltip },
+							translated: true,
+						});
 					});
-				});
-			},
-		});
-	} else {
-		if (game.settings.get("ru-ru", "compendiumTranslation")) {
+				},
+			});
+		} else {
 			new Dialog({
 				title: "Перевод библиотек",
 				content:
@@ -121,30 +117,24 @@ export function init() {
 	}
 
 	/*  Настройка автоопределения анимаций AA  */
-	Hooks.on("renderSettingsConfig", (app, html, data) => {
+	Hooks.on("renderSettingsConfig", async (app, html, data) => {
 		if (!game.user.isGM) return;
 
 		const lastMenuSetting = html
 			.find(`input[name="ru-ru.compendiumTranslation"]`)
 			.closest(".form-group");
 
-		const updateAAButton = $(`
-  <label>
-    Перед переводом анимаций требуется включить модули Automated Animations, D&D5E Animations, JB2A Patreon
-  </label>
-  <div class="form-group">
-      <button type="button">
-          <i class="fas fa-cogs"></i>
-          <label>Перевести анимации</label>
-      </button>
-  </div>
-  `);
-		updateAAButton.find("button").click((e) => {
+		let button_html = await renderTemplate(
+			"modules/ru-ru/templates/dnd5e-settings-update-aa-button.hbs",
+		);
+
+		button_html = $(button_html);
+		button_html.find("button").click((e) => {
 			e.preventDefault();
 			updateAA();
 		});
 
-		lastMenuSetting.after(updateAAButton);
+		lastMenuSetting.after(button_html);
 	});
 }
 
