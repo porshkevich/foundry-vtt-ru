@@ -257,6 +257,8 @@
 		"SaveGlobalBonusHint": "Бонус применяется ко всем спасброскам.",
 		"SavePromptTitle": "Спасбросок {ability}",
 		"SavingThrow": "Спасбросок",
+		"DND5E.SavingThrowDC": "СЛ {dc} Спасбросок {ability}",
+		"DND5E.SavingThrowRoll": "Спасбросок {ability}",
 		"ScalingFormula": "Формула повышенного уровня",
 		"SchoolAbj": "Ограждение",
 		"SchoolCon": "Вызов",
@@ -410,5 +412,8 @@
 		"5eRestEpic": "Эпическая героика (ПО: 1 час, КО: 1 мин)",
 		"5eRestGritty": "Жестокий реализм (ПО: 7 дней, КО: 8 часов)",
 		"5eRestPHB": "Книга Игрока (ПО: 8 часов, КО: 1 час)"
+	},
+	"EDITOR.DND5E.Inline": {
+		"SaveLong": "Спасбросок {save}"
 	}
 }
